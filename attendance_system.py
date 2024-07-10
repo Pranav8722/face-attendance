@@ -7,33 +7,48 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 
 # Global variables
-attendance_recorded = False
+attendance_recorded = set()
 face_id = 0
 
-def record_attendance(id):
-    global attendance_recorded
-    
-    if not attendance_recorded:
-        now = datetime.now()
-        date = now.strftime("%Y-%m-%d")
-        time = now.strftime("%H:%M:%S")
+def record_attendance(id, name):
+    now = datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    time = now.strftime("%H:%M:%S")
 
-        if not os.path.exists('attendance.csv'):
-            df = pd.DataFrame(columns=['ID', 'Date', 'Time'])
-        else:
-            df = pd.read_csv('attendance.csv')
+    if not os.path.exists('attendance.csv'):
+        df = pd.DataFrame(columns=['ID', 'Name', 'Date', 'Time'])
+    else:
+        df = pd.read_csv('attendance.csv')
 
-        df = pd.concat([df, pd.DataFrame([{'ID': id, 'Date': date, 'Time': time}])], ignore_index=True)
-        df.to_csv('attendance.csv', index=False)
+    df = pd.concat([df, pd.DataFrame([{'ID': id, 'Name': name, 'Date': date, 'Time': time}])], ignore_index=True)
+    df.to_csv('attendance.csv', index=False)
 
-        attendance_recorded = True
+def save_id_name_mapping(id, name):
+    if not os.path.exists('id_name_mapping.csv'):
+        df = pd.DataFrame(columns=['ID', 'Name'])
+    else:
+        df = pd.read_csv('id_name_mapping.csv')
+
+    if df[df['ID'] == int(id)].empty:
+        df = pd.concat([df, pd.DataFrame([{'ID': int(id), 'Name': name}])], ignore_index=True)
+        df.to_csv('id_name_mapping.csv', index=False)
+
+def get_name_from_id(id):
+    if not os.path.exists('id_name_mapping.csv'):
+        return "Unknown"
+
+    df = pd.read_csv('id_name_mapping.csv')
+    person = df[df['ID'] == int(id)]
+    if not person.empty:
+        return person.iloc[0]['Name']
+    else:
+        return "Unknown"
 
 def train_data():
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     cascade_path = 'haarcascade_frontalface_default.xml'
     face_cascade = cv2.CascadeClassifier(cascade_path)
     
-    # Function to get images and labels
     def get_images_and_labels(path):
         image_paths = [os.path.join(path, f) for f in os.listdir(path)]
         faces = []
@@ -44,16 +59,10 @@ def train_data():
             ids.append(int(os.path.split(image_path)[-1].split(".")[1]))
         return faces, ids
     
-    # Path to dataset directory (change as needed)
     dataset_path = 'dataset'
-    
-    # Get faces and ids
     faces, ids = get_images_and_labels(dataset_path)
     
-    # Train the recognizer
     recognizer.train(faces, np.array(ids))
-    
-    # Save trained model
     recognizer.write('trainer/trainer.yml')
     
     print("Training completed successfully.")
@@ -61,7 +70,6 @@ def train_data():
 def add_face():
     global face_id
     
-    # Prompt user for ID and Name
     id = simpledialog.askstring("Input", "Enter ID:")
     if id is None:
         return
@@ -69,7 +77,8 @@ def add_face():
     if name is None:
         return
     
-    # Capture images
+    save_id_name_mapping(id, name)
+    
     cam = cv2.VideoCapture(0)
     cascade_path = 'haarcascade_frontalface_default.xml'
     face_cascade = cv2.CascadeClassifier(cascade_path)
@@ -81,15 +90,15 @@ def add_face():
         
         for (x, y, w, h) in faces:
             face_id += 1
-            filename = f"dataset/User.{id}.{name}.{face_id}.{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
-            cv2.imwrite(filename, gray[y:y+h,x:x+w])
+            filename = f"dataset/User.{id}.{face_id}.jpg"
+            cv2.imwrite(filename, gray[y:y+h, x:x+w])
             cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
             cv2.waitKey(100)
         
         cv2.imshow('camera', img)
         cv2.waitKey(1)
         
-        if face_id >= 30:  # Capture 30 samples
+        if face_id >= 30:
             break
     
     cam.release()
@@ -113,23 +122,26 @@ def recognize_face():
         for (x, y, w, h) in faces:
             id, confidence = recognizer.predict(gray[y:y+h, x:x+w])
             
-            if confidence < 100:
-                confidence = f"  {round(100 - confidence)}%"
-                record_attendance(id)
+            if confidence < 50:  # Adjust threshold as needed
+                name = get_name_from_id(id)
+                confidence_text = f"  {round(100 - confidence)}%"
+                if id not in attendance_recorded:
+                    record_attendance(id, name)
+                    attendance_recorded.add(id)
             else:
-                id = "unknown"
-                confidence = f"  {round(100 - confidence)}%"
+                id = "."
+                name = "unknown"
+                confidence_text = f"  {round(100 - confidence)}%"
             
             cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
-            cv2.putText(img, str(id), (x+5, y-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            cv2.putText(img, str(confidence), (x+5, y+h-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 1)
+            cv2.putText(img, f"{id} - {name}", (x+5, y-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.putText(img, str(confidence_text), (x+5, y+h-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 1)
         
         cv2.imshow('camera', img)
         
         if cv2.waitKey(10) & 0xFF == 27:
             break
     
-    attendance_recorded = False  # Reset flag for next session
     cam.release()
     cv2.destroyAllWindows()
 
