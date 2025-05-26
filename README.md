@@ -1,80 +1,90 @@
-title: "📸 Face Attendance System"
-description: >
-  A Python-based face recognition attendance system using OpenCV, Tkinter, and machine learning.
-  Automatically marks attendance by recognizing faces through a webcam, storing attendance logs, 
-  and managing datasets for training and recognition.
+project:
+  name: "Face Attendance System"
+  description: >
+    A Python-based face recognition attendance system leveraging OpenCV, Tkinter, and machine learning.
+    This system automates attendance tracking by recognizing faces through a webcam interface and stores
+    attendance logs in a structured format. It includes user-friendly GUI components and supports real-time
+    face registration, training, and attendance marking.
 
-sections:
-  - title: "✨ Features"
-    list:
-      - "🧑‍💻 Face Registration: Add new faces via webcam"
-      - "🧠 Face Recognition: Real-time face detection and attendance marking"
-      - "📊 Attendance Records: Saves logs with ID, name, date, and time (CSV)"
-      - "🖥 User-Friendly GUI: Tkinter interface with functional buttons"
-      - "🗂 Data Management: Stores face images and ID-name mappings"
+features:
+  - "Face Registration: Capture new faces using a webcam and store them in a dataset."
+  - "Face Recognition: Recognize and verify faces in real-time to mark attendance."
+  - "Attendance Logging: Automatically logs attendance with ID, name, date, and timestamp in a CSV file."
+  - "Graphical Interface: Intuitive GUI built with Tkinter for streamlined interaction."
+  - "Dataset Management: Supports persistent mapping of user IDs to names and maintains image data."
 
-  - title: "⚙️ Installation"
-    steps:
-      - "1️⃣ Clone the repository:"
-      - |
+installation:
+  prerequisites:
+    - "Python 3.x"
+    - "pip (Python package installer)"
+  dependencies:
+    - "opencv-python"
+    - "numpy"
+    - "pandas"
+    - "pillow"
+    - "tkinter (usually pre-installed with Python)"
+  instructions:
+    - step: "Clone the repository"
+      command: |
         git clone https://github.com/Pranav8722/face-attendance.git
         cd face-attendance
-      - "2️⃣ Install dependencies:"
-      - "🟢 Python 3.x"
-      - "🟢 OpenCV (`opencv-python`)"
-      - "🟢 Numpy"
-      - "🟢 Pandas"
-      - "🟢 Pillow (for trainer)"
-      - "🟢 Tkinter (usually pre-installed)"
-      - "📦 Use pip:"
-      - |
+    - step: "Install the required packages"
+      command: |
         pip install opencv-python numpy pandas pillow
 
-  - title: "🚀 Usage"
-    steps:
-      - "🆕 Register New Faces:"
-      - |
-        python attendance_system.py
-      - "➡️ Click 'Add Face to Dataset', enter user ID & name, webcam captures images"
-      - "🧪 Train the Model:"
-      - "➡️ Click 'Train Data' OR run:"
-      - |
-        python trainer.py
-      - "📍 Mark Attendance:"
-      - "➡️ Click 'Mark Attendance', face is recognized and logged"
-      - "🧹 Clear Attendance:"
-      - |
-        python clear_attendance.py
+usage:
+  - action: "Run the GUI application"
+    command: |
+      python attendance_system.py
+    description: "Launches the main application interface."
+  - action: "Register New Faces"
+    description: >
+      Select 'Add Face to Dataset' in the GUI. Enter user ID and name when prompted. 
+      The system will capture facial images via webcam.
+  - action: "Train the Model"
+    description: >
+      Click 'Train Data' from the GUI or run `python trainer.py` to train the face recognition model.
+  - action: "Mark Attendance"
+    description: >
+      Use 'Mark Attendance' to start webcam recognition. Detected faces will be verified and logged into attendance.csv.
+  - action: "Clear Attendance Logs"
+    command: |
+      python clear_attendance.py
+    description: "Clears all existing attendance records."
 
-  - title: "📁 File Structure"
-    list:
-      - "`attendance_system.py` — Main app (GUI)"
-      - "`face_dataset.py` — Captures facial images"
-      - "`trainer.py` — Trains recognizer on dataset"
-      - "`clear_attendance.py` — Clears attendance log"
-      - "`haarcascade_frontalface_default.xml` — Haar Cascade file"
-      - "`dataset/` — Folder storing captured images"
-      - "`trainer/trainer.yml` — Trained face recognition model"
-      - "`attendance.csv` — Attendance record log"
-      - "`id_name_mapping.csv` — Maps user ID to name"
+file_structure:
+  - "attendance_system.py: Main application interface (GUI)"
+  - "face_dataset.py: Captures and stores user face images"
+  - "trainer.py: Trains the face recognizer model using LBPH"
+  - "clear_attendance.py: Resets attendance logs"
+  - "haarcascade_frontalface_default.xml: Haar cascade classifier for face detection"
+  - "dataset/: Directory for storing captured facial images"
+  - "trainer/trainer.yml: Serialized trained model"
+  - "attendance.csv: CSV file storing attendance logs"
+  - "id_name_mapping.csv: CSV file mapping user IDs to names"
 
-  - title: "🧠 How It Works"
-    steps:
-      - "📸 Face Registration: Captures multiple images per user with unique ID"
-      - "🧠 Model Training: LBPH recognizer trained on dataset"
-      - "🧍‍♂️ Recognition & Attendance: Webcam detects faces, logs attendance in CSV"
+how_it_works:
+  - step: "Face Registration"
+    detail: "Captures multiple images (default: 30) for each user, associated with a unique ID."
+  - step: "Model Training"
+    detail: "Uses Local Binary Pattern Histogram (LBPH) algorithm to train the face recognizer on the dataset."
+  - step: "Face Recognition & Attendance"
+    detail: >
+      Uses the trained model to identify users in real-time via webcam and log attendance entries
+      with precise timestamps.
 
-  - title: "📝 Notes"
-    list:
-      - "💡 Use good lighting for better recognition accuracy"
-      - "📷 Default: 30 images per user during registration"
-      - "🛠 GUI is customizable for advanced features"
+notes:
+  - "Ensure proper lighting during face registration and recognition for optimal accuracy."
+  - "Multiple images per user enhance the robustness of face recognition."
+  - "The GUI is modular and can be extended with reporting tools or database integration."
 
-  - title: "📜 License"
-    content: >
-      This project is open-source and available under the MIT License.
+license:
+  name: "MIT License"
+  type: "Open Source"
+  url: "https://opensource.org/licenses/MIT"
 
-  - title: "🙏 Acknowledgements"
-    list:
-      - "[OpenCV](https://opencv.org/)"
-      - "[Tkinter GUI Library](https://docs.python.org/3/library/tkinter.html)"
+acknowledgements:
+  - name: "OpenCV"
+    url: "https://opencv.org/"
+  - name: "Tkinter (Python GUI)"
+    url: "https://docs.python.org/3/library/tkinter.html"
